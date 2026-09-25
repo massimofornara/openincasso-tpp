@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenIncasso TPP — Riconciliazione AISP</title>
+  <meta name="description" content="Piattaforma AISP di riconciliazione fatture FattureinCloud e movimenti bancari. Software product, non licenza Banca d'Italia." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #071018;
+      --panel: #0d1a24;
+      --panel2: #122230;
+      --line: #1e3344;
+      --text: #e7f0f6;
+      --muted: #8aa0b2;
+      --accent: #3dd6c6;
+      --accent2: #7aa8ff;
+      --warn: #f5c15c;
+      --danger: #ff6b7a;
+      --ok: #4ade80;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; }
+    body { min-height: 100vh; }
+    a { color: var(--accent); }
+    header {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 18px 28px; border-bottom: 1px solid var(--line); position: sticky; top: 0;
+      background: rgba(7,16,24,.92); backdrop-filter: blur(14px); z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: grid; place-items: center; color: #042018; font-weight: 700;
+    }
+    .brand h1 { font-size: 16px; margin: 0; letter-spacing: .02em; }
+    .brand p { margin: 0; color: var(--muted); font-size: 12px; }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { font-size: 11px; border: 1px solid var(--line); padding: 5px 9px; border-radius: 999px; color: var(--muted); }
+    .pill.ok { color: var(--ok); border-color: #24563a; }
+    .pill.warn { color: var(--warn); border-color: #5b4a22; }
+    main { padding: 22px 28px 80px; max-width: 1400px; margin: 0 auto; }
+    .legal {
+      background: #1a1408; border: 1px solid #5b4a22; color: #f3d9a0;
+      padding: 12px 14px; border-radius: 12px; font-size: 13px; line-height: 1.45; margin-bottom: 18px;
+    }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+    .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); }
+    .kpi span { color: var(--muted); font-size: 12px; display: block; margin-bottom: 8px; }
+    .kpi strong { font-size: 26px; font-family: "IBM Plex Mono", monospace; }
+    .kpi em { font-style: normal; color: var(--muted); font-size: 12px; }
+    .grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 14px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    .card h2 { margin: 0 0 12px; font-size: 15px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    button, .btn {
+      background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+      border-radius: 10px; padding: 8px 12px; cursor: pointer; font: inherit; font-size: 13px;
+    }
+    button.primary { background: var(--accent); color: #042018; border: 0; font-weight: 600; }
+    button.ghost { background: transparent; }
+    input, select, textarea {
+      background: #0a151d; color: var(--text); border: 1px solid var(--line);
+      border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 13px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    .status { font-size: 11px; padding: 3px 7px; border-radius: 999px; display: inline-block; }
+    .s-ok { background: #143222; color: var(--ok); }
+    .s-wait { background: #2a2412; color: var(--warn); }
+    .s-miss { background: #2a1216; color: var(--danger); }
+    .mono { font-family: "IBM Plex Mono", monospace; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
+    footer { color: var(--muted); font-size: 12px; padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; }
+    @media (max-width: 980px) {
+      .kpis, .grid, .split { grid-template-columns: 1fr; }
+      header, main { padding-left: 14px; padding-right: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">OI</div>
+      <div>
+        <h1>OpenIncasso TPP</h1>
+        <p>AISP di riconciliazione · FattureinCloud × banca · kWh</p>
+      </div>
+    </div>
+    <div class="pills">
+      <span class="pill warn">NON è una licenza Banca d'Italia</span>
+      <span class="pill ok">Prodotto live</span>
+      <span class="pill">PSD2 / AISP-ready</span>
+      <span class="pill">Stripe PSP · 0,00 €</span>
+    </div>
+  </header>
+  <main>
+    <div class="legal">
+      <strong>Trasparenza normativa.</strong>
+      Un TPP autorizzato (AISP/PISP) in Italia richiede società, programma di attività, polizza RC professionale,
+      framework ICT/DORA e provvedimento di Banca d'Italia (tempi tipici 6–12 mesi).
+      Questa istanza è il <em>prodotto software</em> di riconciliazione, pubblicato in live, con connettori pronti
+      per FattureinCloud, CSV CBI/SEPA e un adapter Open Banking (TrueLayer / Fabrick / CBI Globe).
+      Non accede ai conti reali finché non colleghi API e, per i conti di pagamento, un TPP autorizzato o un ASPSP.
+    </div>
+    <section class="kpis">
+      <div class="kpi"><span>Saldo banca calcolato</span><strong id="kpiSaldo">€ 0,00</strong><em>aggiornato a ogni match</em></div>
+      <div class="kpi"><span>Fatture in portafoglio</span><strong id="kpiFatture">0</strong><em id="kpiFattureSub">0 riconciliate</em></div>
+      <div class="kpi"><span>Movimenti banca</span><strong id="kpiMov">0</strong><em id="kpiMovSub">0 abbinati</em></div>
+      <div class="kpi"><span>Delta aperto</span><strong id="kpiDelta">€ 0,00</strong><em>fatture non incassate − extra banca</em></div>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Motore di riconciliazione</h2>
+        <div class="toolbar">
+          <button class="primary" onclick="seedDemo()">Carica scenario kWh demo</button>
+          <button onclick="autoMatch()">Abbina automatico</button>
+          <button onclick="exportCsv()">Esporta riconciliazione CSV</button>
+          <button class="ghost" onclick="resetAll()">Reset</button>
+        </div>
+        <p class="hint">Matching: stesso importo (±0,02 €) + finestra data ±7 giorni + similarità causale/numero fattura. Il saldo banca parte dal saldo iniziale e si aggiorna ad ogni movimento.</p>
+        <div class="split" style="margin:12px 0">
+          <label class="hint">Saldo iniziale conto (€)
+            <input id="saldoIniziale" type="number" step="0.01" value="12840.55" style="width:100%;margin-top:6px" onchange="recompute()" />
+          </label>
+          <label class="hint">IBAN operativo
+            <input id="iban" value="IT60X0542811101000000123456" style="width:100%;margin-top:6px" />
+          </label>
+        </div>
+        <div style="overflow:auto;max-height:420px">
+          <table>
+            <thead>
+              <tr><th>Fattura FIC</th><th>Importo</th><th>Scadenza</th><th>Match banca</th><th>Stato</th></tr>
+            </thead>
+            <tbody id="fattureBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Connettori</h2>
+        <div class="split">
+          <div>
+            <p class="hint"><strong>FattureinCloud</strong> — incolla API key (resta nel browser).</p>
+            <input id="ficKey" placeholder="FIC API token" style="width:100%;margin:8px 0" />
+            <button onclick="connectFic()">Salva connettore FIC</button>
+            <p class="hint" id="ficStatus">Non connesso. In produzione: GET /c/{company}/issued_documents?type=invoice</p>
+          </div>
+          <div>
+            <p class="hint"><strong>Open Banking</strong> — consenso AISP (mock SCA).</p>
+            <select id="obProvider" style="width:100%;margin:8px 0">
+              <option>TrueLayer</option>
+              <option>Fabrick</option>
+              <option>CBI Globe</option>
+              <option>Salt Edge</option>
+              <option>Stripe Treasury / payouts</option>
+            </select>
+            <button class="primary" onclick="startConsent()">Avvia consenso SCA</button>
+            <p class="hint" id="obStatus">Nessun consenso. Stripe live massimo.tech: disponibile 0,00 €</p>
+          </div>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0" />
+        <h2>Importa file</h2>
+        <p class="hint">CSV fatture: numero,cliente,data,scadenza,importo,kwh,causale<br>CSV banca: data,importo,causale,riferimento</p>
+        <div class="toolbar">
+          <label class="btn">CSV fatture<input type="file" accept=".csv,text/csv" hidden onchange="importFatture(event)" /></label>
+          <label class="btn">CSV banca<input type="file" accept=".csv,text/csv" hidden onchange="importBanca(event)" /></label>
+        </div>
+        <div style="overflow:auto;max-height:240px;margin-top:10px">
+          <table>
+            <thead><tr><th>Data</th><th>Importo</th><th>Causale</th><th>Stato</th></tr></thead>
+            <tbody id="bancaBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section class="card" style="margin-top:14px">
+      <h2>Ledger saldo — ogni movimento aggiorna il conto</h2>
+      <div style="overflow:auto">
+        <table>
+          <thead><tr><th>#</th><th>Data</th><th>Descrizione</th><th>Dare / Avere</th><th>Saldo progressivo</th></tr></thead>
+          <tbody id="ledgerBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <footer>
+    OpenIncasso TPP · repo <a href="https://github.com/massimofornara/openincasso-tpp">github.com/massimofornara/openincasso-tpp</a>
+    · titolare tecnico massimofornara · Stripe acct live massimo.tech
+    · Questo software non è un istituto di pagamento né un AISP iscritto all’albo.
+  </footer>
+<script>
+const EUR = n => new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(Number(n) || 0);
+const KEY = "openincasso.v1";
+let state = { fatture: [], movimenti: [], fic: null, consent: null };
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function load() { try { const raw = localStorage.getItem(KEY); if (raw) state = JSON.parse(raw); } catch {}
+}
+function seedDemo() {
+  state.fatture = [
+    { id: "FT-2026-01402", cliente: "GSE / Ritiro dedicato", data: "2026-09-02", scadenza: "2026-09-18", importo: 1840.22, kwh: 6120, causale: "Cessione kWh settembre lotto A", match: null },
+    { id: "FT-2026-01418", cliente: "Comune di Asti — tetto palestra", data: "2026-09-08", scadenza: "2026-09-22", importo: 960.00, kwh: 3100, causale: "Energia autoconsumo condiviso", match: null },
+    { id: "FT-2026-01431", cliente: "Agricola Collina Srl", data: "2026-09-11", scadenza: "2026-09-25", importo: 2475.80, kwh: 8040, causale: "Fattura kWh FER", match: null },
+    { id: "FT-2026-01444", cliente: "Condominio Via Po 12", data: "2026-09-15", scadenza: "2026-09-30", importo: 388.40, kwh: 1288, causale: "Riparto energia comunitaria", match: null },
+    { id: "FT-2026-01388", cliente: "Officina Nord", data: "2026-08-28", scadenza: "2026-09-12", importo: 1210.00, kwh: 4012, causale: "Saldo agosto kWh", match: null }
+  ];
+  state.movimenti = [
+    { id: "MOV-1001", data: "2026-09-19", importo: 1840.22, causale: "BONIFICO GSE FT-2026-01402 KWH", rif: "CRO 928331", match: null },
+    { id: "MOV-1002", data: "2026-09-23", importo: 960.00, causale: "INCASSO COMUNE ASTI FATT 1418", rif: "SEPA 4412", match: null },
+    { id: "MOV-1003", data: "2026-09-16", importo: -286.40, causale: "CANONE CONTO + RID ASSICURAZIONE", rif: "RID", match: null },
+    { id: "MOV-1004", data: "2026-09-21", importo: 1210.00, causale: "BONIFICO OFFICINA NORD SALDO AGOSTO", rif: "CRO 928880", match: null },
+    { id: "MOV-1005", data: "2026-09-24", importo: 388.40, causale: "SEPA CONDOMINIO VIA PO", rif: "SCT", match: null },
+    { id: "MOV-1006", data: "2026-09-10", importo: 500.00, causale: "VERSAMENTO CONTANTI", rif: "CASSA", match: null }
+  ];
+  state.fatture.forEach(f => f.match = null);
+  state.movimenti.forEach(m => m.match = null);
+  save(); autoMatch();
+}
+function daysBetween(a, b) { return Math.abs((new Date(a) - new Date(b)) / 86400000); }
+function similar(a, b) {
+  const na = (a || "").toUpperCase();
+  const nb = (b || "").toUpperCase();
+  if (!na || !nb) return 0;
+  if (nb.includes(na) || na.includes(nb)) return 1;
+  const tokens = na.split(/[^A-Z0-9]+/).filter(x => x.length > 3);
+  return tokens.filter(t => nb.includes(t)).length / Math.max(tokens.length, 1);
+}
+function autoMatch() {
+  state.fatture.forEach(f => f.match = null);
+  state.movimenti.forEach(m => m.match = null);
+  const used = new Set();
+  for (const f of state.fatture) {
+    let best = null, bestScore = 0;
+    for (const m of state.movimenti) {
+      if (used.has(m.id) || m.importo <= 0) continue;
+      if (Math.abs(m.importo - f.importo) > 0.02) continue;
+      const d = Math.min(daysBetween(m.data, f.scadenza), daysBetween(m.data, f.data));
+      if (d > 14) continue;
+      const s = 2 + (d <= 7 ? 1 : 0) + similar(f.id, m.causale) + similar(f.cliente, m.causale);
+      if (s > bestScore) { bestScore = s; best = m; }
+    }
+    if (best) { f.match = best.id; best.match = f.id; used.add(best.id); }
+  }
+  save(); render();
+}
+function recompute() { render(); }
+function ledger() {
+  const start = Number(document.getElementById("saldoIniziale").value || 0);
+  const rows = [{ desc: "Saldo iniziale", data: "—", amount: start, saldo: start }];
+  const mov = [...state.movimenti].sort((a,b) => a.data.localeCompare(b.data));
+  let saldo = start;
+  for (const m of mov) {
+    saldo = Math.round((saldo + m.importo) * 100) / 100;
+    rows.push({ desc: m.causale + (m.match ? " → " + m.match : ""), data: m.data, amount: m.importo, saldo, id: m.id });
+  }
+  return rows;
+}
+function render() {
+  const fBody = document.getElementById("fattureBody");
+  fBody.innerHTML = state.fatture.map(f => {
+    const st = f.match ? "s-ok" : "s-wait";
+    const label = f.match ? "Riconciliata" : "Aperta";
+    return `<tr><td><strong>${f.id}</strong><div class="hint">${f.cliente}<br>${f.kwh || 0} kWh · ${f.causale}</div></td><td class="mono">${EUR(f.importo)}</td><td>${f.scadenza}</td><td class="mono">${f.match || "—"}</td><td><span class="status ${st}">${label}</span></td></tr>`;
+  }).join("") || `<tr><td colspan="5" class="hint">Nessuna fattura. Carica lo scenario demo o un CSV.</td></tr>`;
+  const bBody = document.getElementById("bancaBody");
+  bBody.innerHTML = state.movimenti.map(m => {
+    const st = m.match ? "s-ok" : (m.importo < 0 ? "s-miss" : "s-wait");
+    const label = m.match ? "Abbinato" : (m.importo < 0 ? "Uscita" : "Da abbinare");
+    return `<tr><td>${m.data}</td><td class="mono">${EUR(m.importo)}</td><td>${m.causale}</td><td><span class="status ${st}">${label}</span></td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="hint">Nessun movimento.</td></tr>`;
+  const L = ledger();
+  document.getElementById("ledgerBody").innerHTML = L.map((r,i) => `<tr><td class="mono">${i}</td><td>${r.data}</td><td>${r.desc}</td><td class="mono">${i===0?"—":EUR(r.amount)}</td><td class="mono"><strong>${EUR(r.saldo)}</strong></td></tr>`).join("");
+  const saldo = L[L.length-1]?.saldo || 0;
+  const recF = state.fatture.filter(f => f.match).length;
+  const recM = state.movimenti.filter(m => m.match).length;
+  const aperte = state.fatture.filter(f => !f.match).reduce((s,f)=>s+f.importo,0);
+  const extra = state.movimenti.filter(m => !m.match && m.importo>0).reduce((s,m)=>s+m.importo,0);
+  document.getElementById("kpiSaldo").textContent = EUR(saldo);
+  document.getElementById("kpiFatture").textContent = state.fatture.length;
+  document.getElementById("kpiFattureSub").textContent = recF + " riconciliate";
+  document.getElementById("kpiMov").textContent = state.movimenti.length;
+  document.getElementById("kpiMovSub").textContent = recM + " abbinati";
+  document.getElementById("kpiDelta").textContent = EUR(aperte - extra);
+}
+function parseCsv(text) {
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if (!lines.length) return [];
+  const head = lines[0].split(/[;,]/).map(s => s.trim().toLowerCase());
+  return lines.slice(1).map(line => {
+    const cols = line.split(/[;,]/);
+    const o = {};
+    head.forEach((h,i) => o[h] = (cols[i] || "").trim());
+    return o;
+  });
+}
+function importFatture(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    parseCsv(reader.result).forEach((r,i) => {
+      state.fatture.push({ id: r.numero || r.id || ("FT-IMP-" + (i+1)), cliente: r.cliente || "", data: r.data || "", scadenza: r.scadenza || r.data || "", importo: Number(String(r.importo).replace(",", ".")), kwh: Number(r.kwh || 0), causale: r.causale || "", match: null });
+    });
+    save(); render();
+  };
+  reader.readAsText(file);
+}
+function importBanca(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    parseCsv(reader.result).forEach((r,i) => {
+      state.movimenti.push({ id: "MOV-IMP-" + Date.now() + "-" + i, data: r.data || "", importo: Number(String(r.importo).replace(",", ".")), causale: r.causale || "", rif: r.riferimento || r.rif || "", match: null });
+    });
+    save(); render();
+  };
+  reader.readAsText(file);
+}
+function exportCsv() {
+  const rows = [["fattura","cliente","importo","scadenza","movimento","data_banca","causale_banca","stato"]];
+  state.fatture.forEach(f => {
+    const m = state.movimenti.find(x => x.id === f.match);
+    rows.push([f.id, f.cliente, f.importo, f.scadenza, m?.id || "", m?.data || "", m?.causale || "", f.match ? "RICONCILIATA" : "APERTA"]);
+  });
+  const csv = rows.map(r => r.map(x => `"${String(x).replaceAll('"','""')}"`).join(";")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "openincasso-riconciliazione.csv"; a.click();
+}
+function connectFic() {
+  const key = document.getElementById("ficKey").value.trim();
+  state.fic = key ? { savedAt: new Date().toISOString(), hint: key.slice(0,4) + "…" } : null;
+  document.getElementById("ficStatus").textContent = key ? "Token salvato in locale (" + state.fic.hint + "). Collega backend /api/fic per il pull reale." : "Token vuoto.";
+  save();
+}
+function startConsent() {
+  const p = document.getElementById("obProvider").value;
+  state.consent = { provider: p, at: new Date().toISOString(), status: "SCA_MOCK_OK" };
+  document.getElementById("obStatus").textContent = "Consenso mock " + p + " registrato. Per i conti reali serve TPP autorizzato + eIDAS + AIS API dell'ASPSP.";
+  save();
+}
+function resetAll() { state = { fatture: [], movimenti: [], fic: null, consent: null }; save(); render(); }
+load(); render();
+</script>
+</body>
+</html>
